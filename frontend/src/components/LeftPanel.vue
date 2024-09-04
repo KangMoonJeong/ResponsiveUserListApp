@@ -2,7 +2,11 @@
   <div class="container-fluid">
     <div class="row justify-content-center w-100">
       <div class="col-12 col-lg-4 left-panel">
-        <img src="@/assets/images/user.png" alt="User Image" class="user-image" />
+        <img
+          src="@/assets/images/user.png"
+          alt="User Image"
+          class="user-image"
+        />
         <div class="left-panel-description">랜덤으로 유저를 조회 해보세요!</div>
         <input
           type="text"
@@ -12,11 +16,33 @@
           class="search-input form-control"
         />
         <div class="buttons">
-          <button class="btn btn-primary icon-button sortIconButton">
-            <img :src="sortIcon" alt="icon" class="sortIcon" />
-            내림차순
-          </button>
-          <button class="btn btn-secondary icon-button userIconButton">
+          <!-- Dropdown for sorting -->
+          <div class="btn-group">
+            <button
+              type="button"
+              class="btn btn-primary dropdown-toggle icon-button sortIconButton"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+            >
+              <img :src="sortIcon" alt="icon" class="sortIcon" />
+              정렬
+            </button>
+            <ul class="dropdown-menu">
+              <li>
+                <a class="dropdown-item" href="#" @click="sort('asc')"
+                  >오름차순</a
+                >
+              </li>
+              <li>
+                <a class="dropdown-item" href="#" @click="sort('desc')"
+                  >내림차순</a
+                >
+              </li>
+            </ul>
+          </div>
+
+          <!-- Random button -->
+          <button class="btn btn-outline-primary icon-button userIconButton" @click="gotoRandomUserEvent()">
             <img :src="userIcon" alt="icon" class="userIcon" />
             랜덤 조회
           </button>
@@ -39,6 +65,12 @@ export default {
     onInput() {
       this.$emit("search", this.localSearchQuery);
     },
+    sort(order) {
+      this.$emit("sort", order);
+    },
+    gotoRandomUserEvent() {
+       this.$emit("getRandomUser");
+    }
   },
 };
 </script>
@@ -71,7 +103,7 @@ export default {
   width: 80%;
   padding: 8px 30px;
   border-radius: 20px;
-    border: 1px solid #e0e0e0;
+  border: 1px solid #e0e0e0;
   font-size: 16px;
   outline: none;
   background-image: url("~@/assets/images/searchIcon.svg");
@@ -96,14 +128,12 @@ export default {
   gap: 8px;
 }
 
-
 .buttons {
   display: flex;
   flex-direction: row;
   gap: 10px;
   flex-wrap: wrap;
   justify-content: center;
-
 }
 
 .sortIconButton {
@@ -114,6 +144,8 @@ export default {
 .userIconButton {
   color: #5c09e3;
   background-color: #ddbffc;
+  border: 1px solid #5c09e3 !important;
+  border-radius: 0.375rem !important;
 }
 
 @media (min-width: 1025px) {
@@ -138,7 +170,7 @@ export default {
   .left-panel-description {
     display: none;
   }
-    .left-panel {
+  .left-panel {
     padding: 0px;
   }
 }

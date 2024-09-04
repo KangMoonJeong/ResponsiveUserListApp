@@ -1,7 +1,7 @@
 <template>
   <div class="user-view">
-    <LeftPanel @search="handleSearch" class="left-panel" />
-    <UserList :searchQuery="searchQuery" />
+    <LeftPanel @search="handleSearch" @sort="handleSort" @getRandomUser="getRandomUser" class="left-panel" />
+    <UserList ref="userList"  :searchQuery="searchQuery" :sortOrder="sortOrder" />
   </div>
 </template>
 
@@ -17,11 +17,19 @@ export default {
   data() {
     return {
       searchQuery: "",
+      sortOrder: "asc",
     };
   },
   methods: {
     handleSearch(query) {
       this.searchQuery = query;
+    },
+    handleSort(order) {
+      this.sortOrder = order; 
+    },
+    getRandomUser() {
+      // UserList의 getRandomUser() 메서드를 호출
+      this.$refs.userList.getRandomUser();
     },
   },
 };
@@ -37,7 +45,7 @@ export default {
   .user-view {
     margin: 0px 120px;
     flex-direction: row;
-    height: 100vh;
+    height: 100%;
   }
 
   .left-panel {

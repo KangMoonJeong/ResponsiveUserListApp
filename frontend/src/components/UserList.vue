@@ -1,17 +1,39 @@
 <template>
   <div class="container user-list">
+    <!-- 사용자 카드 그리드 -->
     <div class="user-card-grid">
-      <div v-for="user in filteredUsers" :key="user.id">
+      <div v-for="user in paginatedUsers" :key="user.id">
         <UserCard :user="user" class="user-card-item" />
       </div>
     </div>
 
-    <div class="pagination mt-4">
-      <img :src="prevButtonIcon" alt="Previous Page" class="paginationIcon" />
-      <button class="btn pagination-btn">1</button>
-      <button class="btn pagination-btn">2</button>
-      <button class="btn pagination-btn">3</button>
-      <img :src="nextButtonIcon" alt="Next Page" class="paginationIcon" />
+    <!-- 페이지네이션 -->
+    <div class="pagination mt-4 mb-3" v-if="totalPages >= 1">
+      <img
+        v-if="currentPage > 1"
+        :src="prevButtonIcon"
+        alt="Previous Page"
+        class="paginationIcon"
+        @click="goToPreviousPage"
+      />
+
+      <button
+        v-for="page in totalPages"
+        :key="page"
+        class="btn pagination-btn"
+        :class="{ active: currentPage === page }"
+        @click="goToPage(page)"
+      >
+        {{ page }}
+      </button>
+
+      <img
+        v-if="currentPage < totalPages"
+        :src="nextButtonIcon"
+        alt="Next Page"
+        class="paginationIcon"
+        @click="goToNextPage"
+      />
     </div>
   </div>
 </template>
@@ -23,83 +45,84 @@ export default {
   components: {
     UserCard,
   },
+  props: ["searchQuery", "sortOrder"],
+
   data() {
     return {
       prevButtonIcon: require("@/assets/images/prevButtonIcon.svg"),
       nextButtonIcon: require("@/assets/images/nextButtonIcon.svg"),
-      filteredUsers: [
-        {
-          id: 1,
-          name: "김철수",
-          phone: "010-9999-9999",
-          email: "kim@gmail.com",
-          picture: "https://via.placeholder.com/150",
-        },
-        {
-          id: 2,
-          name: "이영희",
-          phone: "010-8888-8888",
-          email: "lee@gmail.com",
-          picture: "https://via.placeholder.com/150",
-        },
-        {
-          id: 3,
-          name: "박준형",
-          phone: "010-7777-7777",
-          email: "park@gmail.com",
-          picture: "https://via.placeholder.com/150",
-        },
-        {
-          id: 4,
-          name: "박민수",
-          phone: "010-6666-6666",
-          email: "parkminsu@gmail.com",
-          picture: "https://via.placeholder.com/150",
-        },
-        {
-          id: 5,
-          name: "조재영",
-          phone: "010-5555-5555",
-          email: "cho@gmail.com",
-          picture: "https://via.placeholder.com/150",
-        },
-        {
-          id: 6,
-          name: "정하나",
-          phone: "010-4444-4444",
-          email: "jung@gmail.com",
-          picture: "https://via.placeholder.com/150",
-        },
-        {
-          id: 7,
-          name: "김유리",
-          phone: "010-3333-3333",
-          email: "yuri@gmail.com",
-          picture: "https://via.placeholder.com/150",
-        },
-        {
-          id: 8,
-          name: "오민수",
-          phone: "010-2222-2222",
-          email: "ohminsu@gmail.com",
-          picture: "https://via.placeholder.com/150",
-        },
-        {
-          id: 9,
-          name: "박서준",
-          phone: "010-1111-1111",
-          email: "parkseojun@gmail.com",
-          picture: "https://via.placeholder.com/150",
-        },
-        {
-          id: 10,
-          name: "이승기",
-          phone: "010-1212-1212",
-          email: "seunggi@gmail.com",
-          picture: "https://via.placeholder.com/150",
-        },
-      ],
+      currentPage: 1,
+      usersPerPage: 10,
+      users: [],
     };
+  },
+  computed: {
+    // 필터된 유저 목록
+    filteredUsers() {
+      if (!this.searchQuery) {
+        return this.users;
+      }
+      return this.users.filter((user) =>
+        user.name.toLowerCase().includes(this.searchQuery.toLowerCase())
+      );
+    },
+
+    // 정렬된 유저 목록
+    sortedUsers() {
+      const usersCopy = [...this.filteredUsers];
+      if (this.sortOrder === "asc") {
+        return usersCopy.sort((a, b) => a.name.localeCompare(b.name));
+      } else if (this.sortOrder === "desc") {
+        return usersCopy.sort((a, b) => b.name.localeCompare(a.name));
+      } else {
+        return usersCopy;
+      }
+    },
+
+    // 페이지 수 계산
+    totalPages() {
+      return Math.ceil(this.sortedUsers.length / this.usersPerPage);
+    },
+
+    // 현재 페이지에 표시할 유저들
+    paginatedUsers() {
+      const startIndex = (this.currentPage - 1) * this.usersPerPage;
+      const endIndex = startIndex + this.usersPerPage;
+      return this.sortedUsers.slice(startIndex, endIndex);
+    },
+  },
+  mounted() {
+    this.getRandomUser(); 
+  },
+
+  methods: {
+    // 특정 페이지로 이동
+    goToPage(page) {
+      this.currentPage = page;
+    },
+
+    // 이전 페이지로 이동
+    goToPreviousPage() {
+      if (this.currentPage > 1) {
+        this.currentPage--;
+      }
+    },
+
+    // 다음 페이지로 이동
+    goToNextPage() {
+      if (this.currentPage < this.totalPages) {
+        this.currentPage++;
+      }
+    },
+      async getRandomUser() {
+      // try {
+      //   const response = await this.$api.getRequest('https://randomuser.me/api/'); // API 호출
+      //   this.users = response.results; // 받아온 데이터를 users 배열에 할당
+      // } catch (error) {
+      //   console.error('랜덤 유저 데이터를 가져오는 중 오류 발생:', error);
+      // }
+      console.log("getRandomUser");
+    },
   },
 };
 </script>
@@ -108,6 +131,7 @@ export default {
 .user-list {
   padding: 20px;
   max-width: 100%;
+  margin-bottom: 30px;
 }
 
 .user-card-grid {
@@ -122,6 +146,11 @@ export default {
   gap: 16px;
   justify-content: center;
   align-items: center;
+}
+
+.active {
+  background-color: #1933cb !important;
+  color: white !important;
 }
 
 .pagination-btn {
