@@ -10,15 +10,16 @@
     <!-- 페이지네이션 -->
     <div class="pagination mt-4 mb-3" v-if="totalPages >= 1">
       <img
-        v-if="currentPage > 1"
+       
         :src="prevButtonIcon"
         alt="Previous Page"
         class="paginationIcon"
-        @click="goToPreviousPage"
+        @click="goToPreviousPageGroup"
+         :style="{ visibility: currentPageGroup > 1 ? 'visible' : 'hidden' }"
       />
 
       <button
-        v-for="page in totalPages"
+        v-for="page in visiblePages"
         :key="page"
         class="btn pagination-btn"
         :class="{ active: currentPage === page }"
@@ -28,11 +29,11 @@
       </button>
 
       <img
-        v-if="currentPage < totalPages"
         :src="nextButtonIcon"
         alt="Next Page"
         class="paginationIcon"
-        @click="goToNextPage"
+        @click="goToNextPageGroup"
+          :style="{ visibility: currentPageGroup < maxPageGroup ? 'visible' : 'hidden' }"
       />
     </div>
   </div>
@@ -52,8 +53,10 @@ export default {
       prevButtonIcon: require("@/assets/images/prevButtonIcon.svg"),
       nextButtonIcon: require("@/assets/images/nextButtonIcon.svg"),
       currentPage: 1,
+      currentPageGroup: 1,
       usersPerPage: 10,
-      users: [],
+      pagesPerGroup: 5, // 한 그룹당 보여줄 페이지 수
+      users: [], // 이 부분은 API를 통해 데이터를 가져옴
     };
   },
   computed: {
@@ -84,6 +87,24 @@ export default {
       return Math.ceil(this.sortedUsers.length / this.usersPerPage);
     },
 
+    // 최대 페이지 그룹 수 계산
+    maxPageGroup() {
+      return Math.ceil(this.totalPages / this.pagesPerGroup);
+    },
+
+    // 현재 그룹에서 보여줄 페이지 목록
+    visiblePages() {
+      const startPage = (this.currentPageGroup - 1) * this.pagesPerGroup + 1;
+      const endPage = Math.min(
+        startPage + this.pagesPerGroup - 1,
+        this.totalPages
+      );
+      return Array.from(
+        { length: endPage - startPage + 1 },
+        (_, i) => startPage + i
+      );
+    },
+
     // 현재 페이지에 표시할 유저들
     paginatedUsers() {
       const startIndex = (this.currentPage - 1) * this.usersPerPage;
@@ -91,38 +112,37 @@ export default {
       return this.sortedUsers.slice(startIndex, endIndex);
     },
   },
-  mounted() {
-    this.getRandomUser(); 
-  },
 
   methods: {
-    // 특정 페이지로 이동
     goToPage(page) {
       this.currentPage = page;
     },
 
-    // 이전 페이지로 이동
-    goToPreviousPage() {
-      if (this.currentPage > 1) {
-        this.currentPage--;
+    goToPreviousPageGroup() {
+      if (this.currentPageGroup > 1) {
+        this.currentPageGroup--;
+        this.currentPage -= 5;
       }
     },
 
-    // 다음 페이지로 이동
-    goToNextPage() {
-      if (this.currentPage < this.totalPages) {
-        this.currentPage++;
+    goToNextPageGroup() {
+      if (this.currentPageGroup < this.maxPageGroup) {
+        this.currentPageGroup++;
+
+        if (this.currentPage + 5 >= this.totalPages) {
+          this.currentPage = this.totalPages;
+        } else {
+          this.currentPage += 5;
+        }
       }
     },
-      async getRandomUser() {
-      // try {
-      //   const response = await this.$api.getRequest('https://randomuser.me/api/'); // API 호출
-      //   this.users = response.results; // 받아온 데이터를 users 배열에 할당
-      // } catch (error) {
-      //   console.error('랜덤 유저 데이터를 가져오는 중 오류 발생:', error);
-      // }
-      console.log("getRandomUser");
+    async getRandomUser() {
+      this.users = await this.getRequest(`/api/users/random`);
     },
+  },
+
+  async mounted() {
+    await this.getRandomUser();
   },
 };
 </script>
@@ -146,6 +166,7 @@ export default {
   gap: 16px;
   justify-content: center;
   align-items: center;
+  cursor: pointer;
 }
 
 .active {
@@ -161,6 +182,12 @@ export default {
   border: none;
   border-radius: 7px;
   color: white;
+  text-align: center;
+  line-height: 30px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  vertical-align: middle;
 }
 
 .paginationIcon {

@@ -24,7 +24,7 @@ export const apiMixin = {
     handleApiError(error) {
       const message = error.response ? error.response.data.message : error.message;
       this.$router.push({
-        name: 'ErrorPage',
+        name: 'ErrorView',
         query: { message },
       });
       throw error;
