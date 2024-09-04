@@ -1,21 +1,31 @@
 <template>
   <div class="container user-list">
+    <!-- 유저 디테일 모달창 -->
+    <DetailUserModal
+      :user="selectedUser"
+      :isVisible="isModalVisible"
+      @close="isModalVisible = false"
+    />
+
     <!-- 사용자 카드 그리드 -->
     <div class="user-card-grid">
       <div v-for="user in paginatedUsers" :key="user.id">
-        <UserCard :user="user" class="user-card-item" />
+        <UserCard
+          :user="user"
+          class="user-card-item"
+          @click="showUserDetails(user)"
+        />
       </div>
     </div>
 
     <!-- 페이지네이션 -->
     <div class="pagination mt-4 mb-3" v-if="totalPages >= 1">
       <img
-       
         :src="prevButtonIcon"
         alt="Previous Page"
         class="paginationIcon"
         @click="goToPreviousPageGroup"
-         :style="{ visibility: currentPageGroup > 1 ? 'visible' : 'hidden' }"
+        :style="{ visibility: currentPageGroup > 1 ? 'visible' : 'hidden' }"
       />
 
       <button
@@ -33,7 +43,9 @@
         alt="Next Page"
         class="paginationIcon"
         @click="goToNextPageGroup"
-          :style="{ visibility: currentPageGroup < maxPageGroup ? 'visible' : 'hidden' }"
+        :style="{
+          visibility: currentPageGroup < maxPageGroup ? 'visible' : 'hidden',
+        }"
       />
     </div>
   </div>
@@ -57,6 +69,8 @@ export default {
       usersPerPage: 10,
       pagesPerGroup: 5, // 한 그룹당 보여줄 페이지 수
       users: [], // 이 부분은 API를 통해 데이터를 가져옴
+      selectedUser: null,
+      isModalVisible: false,
     };
   },
   computed: {
@@ -138,6 +152,11 @@ export default {
     },
     async getRandomUser() {
       this.users = await this.getRequest(`/api/users/random`);
+    },
+
+    showUserDetails(user) {
+      this.selectedUser = user; 
+      this.isModalVisible = true; 
     },
   },
 
